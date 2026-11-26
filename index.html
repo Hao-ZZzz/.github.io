@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="theme-color" content="#08040f" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="referrer" content="no-referrer" />
+
+<title>送给你一颗心 ♥</title>
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="送给你一颗心 ♥" />
+<meta property="og:description" content="轻触屏幕，看看会发生什么。" />
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #08040f;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-text-size-adjust: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  #c {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+  }
+
+  .stage {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 16px;
+    pointer-events: none;
+    /* 文字整体略低于几何中心，落在心的中下部 */
+    margin-top: 7vh;
+  }
+
+  /* 文字始终可见：入场动画只用位移，不用 opacity，
+     这样即使动画未推进（旧 WebView / 截图环境）文字也不会消失 */
+  .to {
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    color: #ffe3ec;
+    max-width: 86vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95),
+                 0 0 10px rgba(255, 110, 158, 0.85),
+                 0 0 26px rgba(255, 48, 108, 0.55);
+    -webkit-animation: slideUp 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+    animation: slideUp 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+  }
+
+  .msg-wrap {
+    margin-top: 14px;
+    opacity: 1;
+    -webkit-animation: slideUp 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both;
+    animation: slideUp 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both;
+  }
+
+  @-webkit-keyframes slideUp {
+    from { -webkit-transform: translateY(18px); }
+    to   { -webkit-transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(18px); }
+    to   { transform: translateY(0); }
+  }
+
+  .msg {
+    display: inline-block;
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: 0.05em;
+    text-indent: 0.05em;
+    white-space: nowrap;
+    color: #ffffff;
+    -webkit-text-stroke: 0.4px rgba(255, 255, 255, 0.75);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.98),
+                 0 0 3px rgba(255, 255, 255, 0.9),
+                 0 0 14px rgba(255, 138, 176, 0.85),
+                 0 0 30px rgba(255, 52, 112, 0.60);
+  }
+
+  .msg.pop {
+    -webkit-animation: pop 0.62s cubic-bezier(0.2, 1.5, 0.4, 1);
+    animation: pop 0.62s cubic-bezier(0.2, 1.5, 0.4, 1);
+  }
+
+  @-webkit-keyframes pop {
+    0%   { -webkit-transform: scale(1); }
+    32%  { -webkit-transform: scale(1.13); }
+    62%  { -webkit-transform: scale(0.985); }
+    100% { -webkit-transform: scale(1); }
+  }
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    32%  { transform: scale(1.13); }
+    62%  { transform: scale(0.985); }
+    100% { transform: scale(1); }
+  }
+
+  .hint {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 26px;
+    bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    z-index: 4;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    color: #ffffff;
+    opacity: 0.3;
+    pointer-events: none;
+    -webkit-animation: breathe 2.8s ease-in-out infinite;
+    animation: breathe 2.8s ease-in-out infinite;
+  }
+
+  @-webkit-keyframes breathe {
+    0%, 100% { opacity: 0.14; }
+    50%      { opacity: 0.52; }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.14; }
+    50%      { opacity: 0.52; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="stage" id="stage">
+  <div class="to" id="to">致 姐姐</div>
+  <div class="msg-wrap">
+    <div class="msg" id="msg">我想你了姐姐</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">轻触屏幕</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d', { alpha: false });
+  var elMsg = document.getElementById('msg');
+  var elTo = document.getElementById('to');
+  var elHint = document.getElementById('hint');
+
+  var TWO_PI = Math.PI * 2;
+
+  /* ============ 文案：?to=小美&msg=做我女朋友吧 ============ */
+  var params = {};
+  location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
+    if (!kv) return;
+    var i = kv.indexOf('=');
+    var k = i < 0 ? kv : kv.slice(0, i);
+    var v = i < 0 ? '' : kv.slice(i + 1);
+    try { params[decodeURIComponent(k)] = decodeURIComponent(v).replace(/\+/g, ' '); }
+    catch (e) { params[k] = v; }
+  });
+
+  var toName = (params.to || '').slice(0, 24);
+  var toMsg = (params.msg || '').slice(0, 24);
+  /* 默认文案：「致 姐姐」+「我想你了姐姐」 */
+  if (toName) elTo.textContent = '致 ' + toName;
+  else elTo.textContent = '致 姐姐';
+  if (toMsg) elMsg.textContent = toMsg;
+  else elMsg.textContent = '我想你了姐姐';
+
+  /* ============ 状态 ============ */
+  var W = 0, H = 0, CX = 0, CY = 0, U = 10.9;
+  var parts = [], sparks = [], stars = [];
+  var lastT = 0, popped = false;
+  var glow = null, core = null;
+
+  /* ============ 心形参数方程 ============ */
+  function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
+  function heartY(t) {
+    return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+  }
+
+  /* ---- 弧长参数化：让轮廓粒子沿边缘等距分布，底尖不再堆积 ---- */
+  var LUT_N = 1024;
+  var LUT = new Float32Array(LUT_N + 1);
+  var LEN = 1;
+
+  (function buildLUT() {
+    var px = 0, py = 0, acc = 0;
+    for (var i = 0; i <= LUT_N; i++) {
+      var t = i / LUT_N * TWO_PI;
+      var x = heartX(t), y = heartY(t);
+      if (i > 0) acc += Math.hypot(x - px, y - py);
+      LUT[i] = acc;
+      px = x; py = y;
+    }
+    LEN = acc || 1;
+  })();
+
+  /* s ∈ [0,1) → 参数 t */
+  function tAtFrac(s) {
+    s = s - Math.floor(s);
+    var target = s * LEN;
+    var lo = 0, hi = LUT_N;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (LUT[mid] < target) lo = mid + 1; else hi = mid;
+    }
+    return lo / LUT_N * TWO_PI;
+  }
+
+  /* ============ 尺寸 ============ */
+  var mctx = document.createElement('canvas').getContext('2d');
+
+  /* 用真实文本测量反推字号，比按字符数估算可靠（不同系统字体宽度不同） */
+  function fitFontSize(text, family, weight, maxW, start, min) {
+    var size = start;
+    for (var guard = 0; guard < 40; guard++) {
+      mctx.font = weight + ' ' + size.toFixed(2) + 'px ' + family;
+      var w = mctx.measureText(text).width;
+      /* 0.05em 字距 ×(len-1) + 0.05em 首行缩进 */
+      w += size * 0.05 * Math.max(0, text.length - 1) + size * 0.05;
+      if (w <= maxW || size <= min) break;
+      size *= Math.max(0.90, (maxW / w) * 0.995);
+      if (size < min) size = min;
+    }
+    return size;
+  }
+
+  function syncCss(cw, ch) {
+    var base = Math.min(cw, ch);
+
+    var msgText = elMsg.textContent || '';
+    /* 注意：canvas 的 font 解析不接受 -apple-system / BlinkMacSystemFont 这类
+       非标准关键字，写进 font 会整条失效、measureText 退化成 10px 默认字体，
+       导致字号永远测不出超宽。这里只用标准字体族名测量。 */
+    var msgFamily = '"PingFang SC","Microsoft YaHei","Hiragino Sans GB",Arial,sans-serif';
+    var msgStart = Math.max(24, Math.min(82, base * 0.130));
+    var msgSize = fitFontSize(msgText, msgFamily, '800', cw * 0.86, msgStart, 15);
+    elMsg.style.fontSize = msgSize.toFixed(1) + 'px';
+
+    var toText = elTo.textContent || '';
+    var toStart = Math.max(12, Math.min(19, base * 0.038));
+    var toSize = fitFontSize(toText, msgFamily, '400', cw * 0.84, toStart, 10);
+    elTo.style.fontSize = toSize.toFixed(1) + 'px';
+  }
+
+  /* ============ 静态渐变 ============ */
+  function buildGradients() {
+    var r = Math.max(W, H) * 0.60;
+    glow = ctx.createRadialGradient(CX, CY, 0, CX, CY, r);
+    glow.addColorStop(0.00, 'rgba(255, 60, 120, 0.085)');
+    glow.addColorStop(0.30, 'rgba(184, 26, 92, 0.050)');
+    glow.addColorStop(0.64, 'rgba(68, 9, 44, 0.022)');
+    glow.addColorStop(1.00, 'rgba(0, 0, 0, 0)');
+
+    var cr = U * 9;
+    core = ctx.createRadialGradient(CX, CY - U * 1.0, 0, CX, CY - U * 1.0, cr);
+    core.addColorStop(0.00, 'rgba(255, 190, 214, 0.070)');
+    core.addColorStop(0.40, 'rgba(255, 76, 132, 0.038)');
+    core.addColorStop(1.00, 'rgba(255, 0, 80, 0)');
+  }
+
+  /* ============ 粒子 ============ */
+  function buildParticles() {
+    var small = Math.min(W, H) < 620;
+    var total = small ? 1500 : 2600;
+    var shellCount = Math.round(total * 0.40);
+
+    var HCY = -2.6;         // 心形竖直重心
+    var FOCAL_UNITS = 58;   // 相机距离（U 为单位），透视温和
+
+    parts.length = 0;
+
+    for (var i = 0; i < total; i++) {
+      var isShell = i < shellCount;
+      var t, r, hx, hy, hz, rad, lum, hue;
+
+      if (isShell) {
+        /* 轮廓：弧长等距，形成连贯的樱花粉光带 */
+        t = tAtFrac(i / shellCount + 0.0001);
+        var inner = (i % 5 === 0);          // 20% 稍微内缩，给轮廓一点厚度
+        r = inner ? 0.955 + Math.random() * 0.012 : 1 + (Math.random() - 0.5) * 0.030;
+        hx = heartX(t) * r;
+        hy = HCY + (heartY(t) - HCY) * r;
+        hz = (Math.random() * 2 - 1) * 0.6;
+        rad = inner ? 0.45 + Math.random() * 0.4 : 0.55 + Math.random() * 0.65;
+        lum = inner ? 62 + Math.random() * 10 : 76 + Math.random() * 16;
+        hue = 340 + Math.random() * 10;
+      } else {
+        /* 内部填充：外圈亮、中心暗，形成体积感。
+           注意必须用弧长等距采样 —— 心形参数方程在 t=0/t=π 处 x 都为 0，
+           均匀采样 t 会让粒子沿中轴堆成一条竖线。 */
+        t = tAtFrac(Math.random());
+        r = Math.pow(Math.random(), 0.48) * 0.96;
+        hx = heartX(t) * r;
+        hy = HCY + (heartY(t) - HCY) * r;
+        hz = (Math.random() * 2 - 1) * 2.4 * (0.3 + 0.7 * r);
+        rad = 0.6 + Math.random() * 1.3;
+        lum = 48 + r * 30 + Math.random() * 8;
+        hue = 334 + Math.random() * 16;
+      }
+
+      /* 初始位置贴近真实投影：第一帧即成型 */
+      var k0 = FOCAL_UNITS / (FOCAL_UNITS + hz);
+      var sx = CX + hx * U * k0;
+      var sy = CY - hy * U * k0;
+      var jit = isShell ? 0.5 : 1.8;
+
+      parts.push({
+        hx: hx, hy: hy, hz: hz,
+        t: t,
+        shell: isShell,
+        x: sx + (Math.random() - 0.5) * U * jit,
+        y: sy + (Math.random() - 0.5) * U * jit,
+        vx: 0, vy: 0,
+        /* 轮廓跟得紧（边缘不散），内部略松（有呼吸感） */
+        follow: isShell ? 0.042 : 0.026,
+        damp: isShell ? 0.885 : 0.912,
+        rad: rad, hue: hue | 0, lum: lum,
+        ph: Math.random() * TWO_PI
+      });
+    }
+
+    stars.length = 0;
+    var sn = small ? 46 : 88;
+    for (var j = 0; j < sn; j++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        s: Math.random() * 1.2 + 0.35,
+        a: Math.random() * 0.34 + 0.09,
+        ph: Math.random() * TWO_PI
+      });
+    }
+  }
+
+  function resize() {
+    var w = canvas.clientWidth || window.innerWidth;
+    var h = canvas.clientHeight || window.innerHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    W = w; H = h;
+    CX = w * 0.5;
+    CY = h * 0.455;
+    U = Math.min(w, h) * 0.0262;
+
+    syncCss(w, h);
+    buildGradients();
+    buildParticles();
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#08040f';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  /* ============ 心跳 ============ */
+  function heartbeat(sec) {
+    var u = (sec % 1.15) / 1.15;
+    var a = Math.exp(-Math.pow((u - 0.085) / 0.055, 2));
+    var b = Math.exp(-Math.pow((u - 0.27) / 0.07, 2));
+    return a + b * 0.62;
+  }
+
+  /* ============ 点击爆发 ============ */
+  function burst(px, py) {
+    var i, p, dx, dy, d, falloff, power;
+    var reach = U * 22 + 60;
+
+    for (i = 0; i < parts.length; i++) {
+      p = parts[i];
+      dx = p.x - px;
+      dy = p.y - py;
+      d = Math.sqrt(dx * dx + dy * dy) + 0.001;
+      falloff = Math.max(0, 1 - d / reach);
+      power = (3 + falloff * 26) * (0.5 + Math.random() * 0.9);
+      p.vx += (dx / d) * power;
+      p.vy += (dy / d) * power;
+    }
+
+    for (i = 0; i < 7; i++) {
+      var ang = -Math.PI / 2 + (Math.random() - 0.5) * 2.7;
+      var sp = 1.1 + Math.random() * 2.9;
+      sparks.push({
+        x: px + (Math.random() - 0.5) * 32,
+        y: py + (Math.random() - 0.5) * 32,
+        vx: Math.cos(ang) * sp,
+        vy: Math.sin(ang) * sp - 0.6,
+        s: 11 + Math.random() * 15,
+        rot: (Math.random() - 0.5) * 0.7,
+        vr: (Math.random() - 0.5) * 0.08,
+        life: 0,
+        ttl: 1.5 + Math.random() * 1.0
+      });
+    }
+
+    elMsg.classList.remove('pop');
+    void elMsg.offsetWidth;
+    elMsg.classList.add('pop');
+
+    if (!popped) {
+      popped = true;
+      elHint.style.webkitAnimation = 'none';
+      elHint.style.animation = 'none';
+      elHint.style.webkitTransition = 'opacity 1.2s ease';
+      elHint.style.transition = 'opacity 1.2s ease';
+      elHint.style.opacity = '0';
+    }
+  }
+
+  function drawHeartShape(x, y, s, rot, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(s, s);
+    ctx.beginPath();
+    ctx.moveTo(0, 0.36);
+    ctx.bezierCurveTo(-0.95, -0.16, -0.52, -0.98, 0, -0.34);
+    ctx.bezierCurveTo(0.52, -0.98, 0.95, -0.16, 0, 0.36);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255, 122, 164, ' + alpha.toFixed(3) + ')';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* ============ 渲染 ============ */
+  function render(now) {
+    if (!lastT) lastT = now;
+    var dt = (now - lastT) / 1000;
+    if (!isFinite(dt) || dt <= 0) dt = 0.016;
+    if (dt > 0.05) dt = 0.05;
+    lastT = now;
+
+    var f = Math.min(dt * 60, 2.2);
+
+    /* 拖尾：深色覆盖 + 中心柔光 */
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(8, 4, 15, 0.30)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    /* 星点 */
+    var i, s, tw;
+    for (i = 0; i < stars.length; i++) {
+      s = stars[i];
+      tw = 0.62 + 0.38 * Math.sin(now * 0.0016 + s.ph);
+      ctx.fillStyle = 'rgba(255, 226, 240, ' + (s.a * tw).toFixed(3) + ')';
+      ctx.fillRect(s.x, s.y, s.s, s.s);
+    }
+
+    /* ---- 3D 心形：小幅摇摆，始终正面 ---- */
+    var sec = now * 0.001;
+    var rotY = Math.sin(sec * 0.40) * 0.24;
+    var rotX = Math.sin(sec * 0.63 + 1.1) * 0.11;
+
+    var cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    var cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    var beat = heartbeat(sec);
+    var S = U * (1 + beat * 0.034);
+    var FOCAL = U * 58;
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    for (i = 0; i < parts.length; i++) {
+      var p = parts[i];
+
+      var x3 = p.hx * cosY - p.hz * sinY;
+      var z3 = p.hx * sinY + p.hz * cosY;
+      var y3 = p.hy * cosX - z3 * sinX;
+      var z4 = p.hy * sinX + z3 * cosX;
+
+      var zp = z4 * S;
+      var k = FOCAL / (FOCAL + zp);
+      var tx = CX + x3 * S * k;
+      var ty = CY - y3 * S * k;
+
+      p.vx += (tx - p.x) * p.follow * f;
+      p.vy += (ty - p.y) * p.follow * f;
+      var damp = Math.pow(p.damp, f);
+      p.vx *= damp;
+      p.vy *= damp;
+      p.x += p.vx * f;
+      p.y += p.vy * f;
+
+      /* k 实际范围约 0.87~1.13 */
+      var depth = (k - 0.87) / 0.26;
+      if (depth < 0) depth = 0; else if (depth > 1) depth = 1;
+
+      var alpha, lum;
+      if (p.shell) {
+        /* 沿心形边缘流动的光 */
+        var flow = Math.sin(p.t * 2.6 - sec * 2.0) * 0.5 + 0.5;
+        alpha = 0.34 + depth * 0.30 + flow * 0.10;
+        lum = p.lum + depth * 12 + flow * 7;
+      } else {
+        alpha = 0.13 + depth * 0.40;
+        lum = p.lum + depth * 14;
+      }
+      if (lum > 100) lum = 100;
+      if (alpha > 1) alpha = 1;
+
+      var rad = p.rad * (0.7 + k * 0.4);
+
+      if (p.shell) {
+        /* 轮廓外加一圈柔光，让边缘连成光带而不是散点 */
+        ctx.fillStyle = 'hsla(' + p.hue + ',100%,' + ((lum * 0.86) | 0) + '%,' + (alpha * 0.16).toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rad * 3.6, 0, TWO_PI);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = 'hsla(' + p.hue + ',100%,' + (lum | 0) + '%,' + alpha.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, rad, 0, TWO_PI);
+      ctx.fill();
+    }
+
+    /* 中心高光 */
+    ctx.globalAlpha = 0.55 + beat * 0.45;
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(CX, CY - U * 1.0, U * 9, 0, TWO_PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    /* 飘散小爱心 */
+    for (i = sparks.length - 1; i >= 0; i--) {
+      s = sparks[i];
+      s.life += dt;
+      if (s.life > s.ttl) { sparks.splice(i, 1); continue; }
+
+      s.vy -= 0.055 * f;
+      s.vx *= 0.985;
+      s.vy *= 0.99;
+      s.x += s.vx * f;
+      s.y += s.vy * f;
+      s.rot += s.vr * f;
+
+      var prog = s.life / s.ttl;
+      var fade = Math.pow(1 - prog, 1.5);
+      drawHeartShape(s.x, s.y, s.s * (1 + prog * 0.25), s.rot, fade * 0.6);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+
+    requestAnimationFrame(render);
+  }
+
+  /* ============ 交互 ============ */
+  var lastTap = 0;
+
+  function handleDown(clientX, clientY) {
+    var now = Date.now();
+    if (now - lastTap < 40) return;
+    lastTap = now;
+
+    var rect = canvas.getBoundingClientRect();
+    burst(clientX - rect.left, clientY - rect.top);
+  }
+
+  function onTouch(e) {
+    var t = e.changedTouches && e.changedTouches[0];
+    if (t) handleDown(t.clientX, t.clientY);
+  }
+
+  function onMouse(e) {
+    handleDown(e.clientX, e.clientY);
+  }
+
+  var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+  if (hasTouch) {
+    window.addEventListener('touchstart', onTouch, { passive: true });
+  } else {
+    window.addEventListener('mousedown', onMouse, { passive: true });
+  }
+
+  document.addEventListener('touchmove', function (e) {
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+  var rzT = null;
+  function onResize() {
+    if (rzT) clearTimeout(rzT);
+    rzT = setTimeout(function () { resize(); lastT = 0; }, 160);
+  }
+
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+
+  /* ============ 启动 ============ */
+  resize();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
